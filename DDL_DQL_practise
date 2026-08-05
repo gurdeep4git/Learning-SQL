@@ -1,0 +1,219 @@
+CREATE TABLE customers(
+	customer_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	full_name VARCHAR(100) NOT NULL,
+	email VARCHAR(255) UNIQUE NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+alter table customers
+add column phone_number varchar(20) unique
+
+CREATE TABLE orders(
+	order_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	customer_id INT,
+	status VARCHAR(20) DEFAULT 'PENDING',
+	total_amount DECIMAL(10,2) CHECK (total_amount > 0.00),
+	order_date DATE NOT NULL,
+	CONSTRAINT fk_orders_customers
+		FOREIGN KEY (customer_id) 
+		REFERENCES customers(customer_id)
+		ON DELETE SET NULL
+);
+
+CREATE TABLE products (
+    product_id   INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    product_name VARCHAR(100) NOT NULL,
+    category     VARCHAR(50) NOT NULL,
+    price        DECIMAL(10, 2) NOT NULL,
+    stock_qty    INT DEFAULT 0,
+    rating       DECIMAL(3, 2)
+);
+
+insert into orders (customer_id, total_amount, order_date)
+values (1, 200.0, '2026-08-01')
+
+insert into customers (full_name, email)
+values ('Clark Kent', 'clark@dailybugle.com'),
+		('diana Prince', 'diana@themyscira.gov')
+
+-- Populate Customers
+INSERT INTO customers (full_name, email, phone_number) VALUES
+('Bruce Wayne', 'bruce@wayne.com', '555-0101'),
+('Clark Kent', 'clark@dailyplanet.com', NULL), -- Notice NULL phone number
+('Diana Prince', 'diana@amazon.gov', '555-0103'),
+('Barry Allen', 'barry@starline.com', NULL),
+('Arthur Curry', 'arthur@atlantis.io', '555-0105');
+
+-- Populate Products
+INSERT INTO products (product_name, category, price, stock_qty, rating) VALUES
+('Gaming Laptop', 'Electronics', 1299.99, 15, 4.80),
+('Wireless Mouse', 'Electronics', 25.50, 120, 4.30),
+('Mechanical Keyboard', 'Electronics', 89.99, 0, 4.60), -- Out of stock
+('Ergonomic Chair', 'Furniture', 299.00, 8, 4.50),
+('Standing Desk', 'Furniture', 450.00, 3, 4.10),
+('Coffee Mug', 'Kitchen', 12.00, 200, 4.90),
+('Noise Canceling Headphones', 'Electronics', 199.99, 45, NULL); -- Unrated
+
+-- Populate Orders
+INSERT INTO orders (customer_id, status, total_amount, order_date) VALUES
+(9, 'SHIPPED', 1299.99, '2026-07-15'),
+(9, 'PENDING', 89.50, '2026-08-01'),
+(10, 'PENDING', 25.50, '2026-08-01'),
+(11, 'CANCELLED', 450.00, '2026-07-20'),
+(12, 'SHIPPED', 199.99, '2026-07-28'),
+(12, 'PENDING', 89.99, '2026-08-02');		
+
+update customers
+set full_name = 'Diana Prince'
+where customer_id = 3
+
+
+update customers
+set phone_number = '7894561230'
+where customer_id = 1
+
+
+update orders
+set status  = 'SHIPPED'
+where customer_id = 1 and order_id = 2
+
+UPDATE orders 
+SET status = 'CANCELLED';
+
+TRUNCATE TABLE customers, orders;
+
+--Task 1 (Range & Logical): Find all products in the 'Electronics' category that have a rating greater than 4.50 OR a stock quantity of more than 50.
+select * from products
+where category = 'Electronics' AND (rating > 4.50 OR stock_qty > 50)
+
+--Task 2 (Pattern Matching): Find all customers whose email address ends with '.com'.
+select full_name, email from customers
+where email LIKE '%.com'
+
+--Task 3 (Null Handling & Arithmetic): Select all products that have a rating (rating IS NOT NULL) and display their product_name, original price, and a 10% discounted price (hint: price * 0.90).
+select product_name, price, (price * 0.90) as discounted_price from products
+where rating is not null
+
+-- Display the top 3 most expensive products in the database. Show their product_name and price, ordered from highest to lowest price.
+select product_name, price from products
+order by price desc
+limit 3
+
+-- Write a query to display all unique product categories available in the products table.
+select distinct category from products
+
+-- Calculate the total number of products and the average product price across all items where stock_qty is greater than 0. Alias the average price column as average_price.
+select COUNT(*) as total_products, AVG(price) as average_price
+from products
+where stock_qty > 0
+
+-- Find out how many products belong to each category. Display the category name alongside a column named total_items.
+select category, COUNT(*) AS total_items
+from products
+group by category
+
+-- Select all customers whose email address contains 'planet' or 'wayne'. Sort the results alphabetically by full_name.
+select * from customers
+WHERE email LIKE '%planet%' 
+   OR email LIKE '%wayne%'
+order by full_name asc
+
+-- Find all product categories that have an average price strictly greater than $100.00. Display the category and its avg_price.
+select category, AVG(price) as avg_price 
+from products
+group by category
+having AVG(price) > 100
+
+-- In the orders table, count how many orders exist for each status, but only include orders placed after '2026-07-20'.
+select status, COUNT(*) as order_count 
+from orders
+where order_date > '2026-07-20'
+group by status
+
+-- Calculate the potential total revenue for each product if all current inventory was sold out (price * stock_qty). 
+-- Display the product_name and the calculated value as inventory_value. Return only the top 2 highest-value inventory items.
+select product_name, (price * stock_qty) as inventory_value
+from products
+ORDER BY inventory_value DESC
+limit 2
+
+-- Select the product_name, price, and rating for all products 
+-- where rating IS NOT NULL and the category is IN ('Electronics', 'Furniture'). Order the output by rating in descending order.
+select product_name, price, rating
+from products
+where rating is not null 
+and category in ('Electronics', 'Furniture')
+order by rating desc
+
+--
+select category, MAX(price) AS max_price
+from products
+where stock_qty > 0
+group by category
+having MAX(price) >= 200.00
+order by max_price DESC
+
+-- Calculate the total retail value of all items in stock for each individual product (price * stock_qty). Display the product_name and name the calculated column total_stock_value.
+select product_name, (price * stock_qty) as total_stock_value
+from products
+
+--Find all orders where the total_amount is between $50.00 and $300.00 (inclusive). Select all columns for these orders.
+select * 
+from orders
+where total_amount between 50 and 300
+order by total_amount
+
+-- Select the order_id, customer_id, and status for all orders where the status is either 'PENDING' or 'SHIPPED'.
+select order_id, customer_id, status
+from orders
+where status in ('PENDING', 'SHIPPED')
+
+-- Find all customers whose email addresses do not contain the domain 'wayne.com'. Display their full_name and email.
+select full_name, email
+from customers
+where email not like '%wayne.com'
+
+-- List all products ordered first by category alphabetically (ascending), and then by price from most expensive to cheapest (descending). 
+-- Display product_name, category, and price.
+select product_name, category, price
+from products
+order by category asc, price desc
+
+-- Find the absolute highest price (max_price) and the sum of all inventory stock quantities (total_inventory_count) across the entire products table in a single query.
+select max(price) as max_price, sum(stock_qty) as total_inventory_count
+from products
+
+-- For each product category, calculate the minimum price, maximum price, and average rating. Display category, min_price, max_price, and avg_rating.
+select category, MIN(price) as min_price, MAX(price) as max_price, AVG(rating) as avg_rating
+from products
+group by category
+
+-- Find all product categories that contain fewer than 3 products (hint: COUNT(*) < 3). Display the category and the item count.
+select category, COUNT(*) as item_count
+from products
+group by category
+having COUNT(*) < 3
+
+-- In the orders table, calculate the total sum of order amounts (SUM(total_amount)) grouped by customer_id, 
+-- but only include orders placed before '2026-07-25', and only show customers whose total order sum is greater than $100.00.
+select customer_id, SUM(total_amount) as sum_amount
+from orders
+where order_date < '2026-07-25'
+group by customer_id
+having SUM(total_amount) > 100
+
+--Write a query on the products table that:
+--Filters for products that cost more than $25.00 AND have a rating greater than or equal to 4.5.
+--Excludes the 'Kitchen' category.
+--Orders the final results by price descending.
+--Limits the output to only the top 2 results.
+select *  
+from products
+where 
+	price > 25 and rating >=4.5 and category not in ('Kitchen')
+order by price desc
+limit 2
+
+select * from customers;
+select * from orders;
+select * from products;
