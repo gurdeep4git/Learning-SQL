@@ -1,0 +1,77 @@
+Question 1
+Find all employees who earn a salary strictly greater than $120,000.00. Display full_name, job_title, and salary.
+
+Question 2
+Calculate the total salary expense and average salary for the entire company. Alias the calculated columns as total_salary_budget and average_salary, rounded to 2 decimal places.
+
+Question 3
+Find all employees hired in or after the year 2022. Order the results by hire_date from most recent to oldest. Display full_name, job_title, and hire_date.
+
+Question 4
+Calculate the average salary for each department using dept_id. Display dept_id and the average salary as dept_avg_salary.
+
+Question 5
+Find all job titles that are shared by fewer than 2 employees in the employees table (i.e., unique job titles). Display job_title and title_count.
+
+Question 6
+List all distinct job titles in the company that contain the word 'Engineer' or 'Developer'.
+
+Section 2: 2-Table JOINs & Self-JOINs (Questions 7–13)
+Question 7
+Display the full_name, job_title, salary, and dept_name for all employees. Ensure employees are correctly linked to their department.
+
+Question 8
+Display all departments alongside the total number of employees in each department. Include departments that currently have 0 employees. Alias the count as employee_count.
+
+Question 9 (Self-JOIN)
+Write a query to display each employee's full_name alongside their manager's full_name (aliased as manager_name). (Hint: Join employees to itself on manager_id = emp_id).
+
+Question 10 (Self-JOIN + Outer Join)
+Display all employees' full_name and their manager's full_name (manager_name). Make sure top-level leaders/executives who have no manager (manager_id IS NULL) are also included in the output.
+
+Question 11
+Find all projects owned by the 'Engineering' department. Display project_name, budget, and dept_name.
+
+Question 12
+Display full_name and project_name for all employees who are assigned to at least one project.
+
+Question 13
+Find all employees who are not currently assigned to any project in the employee_projects table. Display their full_name and job_title.
+
+Section 3: Multi-Table JOINs (Questions 14–18)
+Question 14 (3-Table JOIN)
+Display full_name (employee), project_name, and hours_allocated for every employee-project assignment.
+
+Question 15 (3-Table JOIN + Aggregation)
+Calculate the total hours_allocated across all projects for each employee. Display full_name and total_hours. Order from most hours allocated to least.
+
+Question 16 (4-Table JOIN)
+Display full_name (employee), dept_name (employee's department), project_name, and hours_allocated.
+
+Question 17 (3-Table Aggregation)
+Calculate the total budget of all projects assigned to each department. Display dept_name and total_project_budget.
+
+Question 18
+Find the total number of hours allocated to each project. Display project_name and total_allocated_hours. Show only projects that have more than 30 total hours allocated.
+
+Section 4: Subqueries (Questions 19–25)
+Question 19 (Scalar Subquery)
+Find all employees who earn more than the company-wide average salary. Display full_name, job_title, and salary.
+
+Question 20 (Scalar Subquery)
+Find all employees who earn less than the average salary of the 'Engineering' department. Display full_name and salary.
+
+Question 21 (Multi-Row Subquery IN)
+Find all employees who work in departments located in either 'New York' or 'San Francisco' using a subquery with IN (without joining departments in the outer query). Display full_name and salary.
+
+Question 22 (Multi-Row Subquery NOT IN)
+Find all departments that currently have no projects assigned to them using NOT IN. Display dept_name and location.
+
+Question 23 (Correlated Subquery)
+Find all employees who earn more than the average salary of their own department. Display full_name, dept_id, and salary.
+
+Question 24 (Correlated Subquery with EXISTS)
+Find all departments that have at least one project with a budget exceeding $200,000.00 using a correlated subquery with EXISTS. Display dept_name.
+
+Question 25 (Derived Table / Subquery in FROM)
+Using a derived table in the FROM clause, calculate the average salary per department, and then return only those departments whose average salary is greater than $120,000.00. Display dept_id and dept_avg_salary.
