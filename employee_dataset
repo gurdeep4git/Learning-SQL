@@ -1,0 +1,74 @@
+CREATE TABLE departments (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(100) NOT NULL,
+    location VARCHAR(100) NOT NULL
+);
+
+INSERT INTO departments (dept_id, dept_name, location) VALUES
+(10, 'Engineering', 'New York'),
+(20, 'Product', 'San Francisco'),
+(30, 'Marketing', 'Chicago'),
+(40, 'Sales', 'Austin');
+
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    salary DECIMAL(10, 2) NOT NULL,
+    hire_date DATE NOT NULL,
+    manager_id INT,
+    dept_id INT,
+    FOREIGN KEY (manager_id) REFERENCES employees(emp_id),
+    FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+);
+
+INSERT INTO employees (emp_id, full_name, email, job_title, salary, hire_date, manager_id, dept_id) VALUES
+(101, 'Sarah Connor', 's.connor@company.com', 'VP of Engineering', 185000.00, '2020-03-15', NULL, 10),
+(102, 'Alex Mercer', 'a.mercer@company.com', 'Senior Software Engineer', 140000.00, '2021-06-01', 101, 10),
+(103, 'Elena Fisher', 'e.fisher@company.com', 'Software Engineer', 110000.00, '2022-08-15', 102, 10),
+(104, 'Marcus Holloway', 'm.holloway@company.com', 'DevOps Specialist', 125000.00, '2021-11-10', 101, 10),
+(105, 'Diana Prince', 'd.prince@company.com', 'Director of Product', 165000.00, '2019-01-20', NULL, 20),
+(106, 'Bruce Wayne', 'b.wayne@company.com', 'Lead Product Manager', 135000.00, '2022-02-01', 105, 20),
+(107, 'Clark Kent', 'c.kent@company.com', 'Product Designer', 95000.00, '2023-04-10', 106, 20),
+(108, 'Peter Parker', 'p.parker@company.com', 'Content Strategist', 75000.00, '2023-09-01', NULL, 30),
+(109, 'Gwen Stacy', 'g.stacy@company.com', 'Marketing Manager', 98000.00, '2022-05-18', 108, 30),
+(110, 'Tony Stark', 't.stark@company.com', 'Sales Executive', 88000.00, '2024-01-15', NULL, 40);
+
+CREATE TABLE projects (
+    project_id INT PRIMARY KEY,
+    project_name VARCHAR(150) NOT NULL,
+    budget DECIMAL(12, 2) NOT NULL,
+    start_date DATE NOT NULL,
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+);
+
+INSERT INTO projects (project_id, project_name, budget, start_date, dept_id) VALUES
+(501, 'Cloud Migration', 250000.00, '2025-01-10', 10),
+(502, 'AI Assistant Integration', 400000.00, '2025-06-01', 10),
+(503, 'Mobile App Redesign', 150000.00, '2025-03-15', 20),
+(504, 'Global Rebranding', 90000.00, '2025-08-01', 30),
+(505, 'Q3 Sales Drive', 50000.00, '2026-06-01', 40),
+(506, 'Legacy System Audit', 30000.00, '2024-11-01', 10);
+
+CREATE TABLE employee_projects (
+    emp_id INT,
+    project_id INT,
+    hours_allocated INT NOT NULL,
+    PRIMARY KEY (emp_id, project_id),
+    FOREIGN KEY (emp_id) REFERENCES employees(emp_id),
+    FOREIGN KEY (project_id) REFERENCES projects(project_id)
+);
+
+INSERT INTO employee_projects (emp_id, project_id, hours_allocated) VALUES
+(101, 501, 20),
+(102, 501, 40),
+(102, 502, 20),
+(103, 502, 35),
+(104, 501, 15),
+(104, 506, 25),
+(105, 503, 10),
+(106, 503, 30),
+(107, 503, 25),
+(109, 504, 40);
