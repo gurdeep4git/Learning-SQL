@@ -1,0 +1,56 @@
+--19-25 challenges
+
+-- Find all employees who earn more than the company-wide average salary. Display full_name, job_title, and salary.
+select full_name, job_title, salary
+from employees
+where salary >
+(select ROUND(AVG(salary),2)
+from employees)
+
+-- Find all employees who earn less than the average salary of the 'Engineering' department. Display full_name and salary.
+select full_name, salary
+from employees 
+where salary < (
+select ROUND(AVG(salary),2) from employees
+where dept_id = (select dept_id from departments where dept_name = 'Engineering')
+)
+
+-- Find all employees who work in departments located in either 'New York' or 'San Francisco' using a subquery with IN (without joining departments in the outer query). 
+-- Display full_name and salary.
+select full_name, salary
+from employees
+where dept_id in 
+(select dept_id 
+from departments
+where location IN ('New York', 'San Francisco'))
+
+-- Find all departments that currently have no projects assigned to them using NOT IN. Display dept_name and location.
+select dept_name, location 
+from departments
+where dept_id NOT IN (select dept_id from projects)
+
+-- Find all employees who earn more than the average salary of their own department. Display full_name, dept_id, and salary.
+select e1.full_name, e1.dept_id, e1.salary
+from employees as e1
+where e1.salary > 
+(select AVG(salary)
+from employees as e2
+where e2.dept_id = e1.dept_id)
+
+-- Find all departments that have at least one project with a budget exceeding $200,000.00 using a correlated subquery with EXISTS. Display dept_name.
+select d.dept_name 
+from departments as d
+where EXISTS(
+select 1 from projects p
+where p.dept_id = d.dept_id 
+AND budget > 200000)
+
+-- Using a derived table in the FROM clause, calculate the average salary per department, 
+-- and then return only those departments whose average salary is greater than $120,000.00. 
+-- Display dept_id and dept_avg_salary.
+
+select dept_stats.dept_id,dept_stats.avg_salary
+from (select dept_id, AVG(salary) as avg_salary
+from employees
+group by dept_id) AS dept_stats
+where dept_stats.avg_salary > 120000
