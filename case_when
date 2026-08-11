@@ -1,0 +1,158 @@
+select full_name, job_title, salary,
+CASE 
+	WHEN salary >= 150000 THEN 'Exective Tier'
+	WHEN (salary >= 100000 AND salary <= 149999.99) AND (job_title LIKE '%Senior%' OR job_title LIKE '%Lead%') THEN 'Senior Leadership'
+	WHEN (salary >= 100000 AND salary <= 149999.99) THEN 'Mid-Level Professional'
+	ELSE 'Associate Tier'
+END as compensation_tier
+from employees
+order by salary desc
+
+select p.project_name, p.budget, SUM(ep.hours_allocated) as total_hours,
+case
+	when p.budget >= 200000.00 AND SUM(ep.hours_allocated) > 30 then 'High Capacity Project'
+	when p.budget < 100000.00 AND SUM(ep.hours_allocated) > 20 then 'Over-allocated / High Risk'
+	else 'Standard Allocation'
+end as budget_risk_status
+from projects as p
+join employee_projects as ep on p.project_id = ep.project_id
+group by p.project_id
+
+
+/*
+Write a query to classify projects in the projects table based on their financial scale and department assignment status.
+
+Display project_name, budget, dept_id, and a calculated column named project_classification.
+
+Rules:
+
+If budget >= 200000.00 AND dept_id is NOT NULL, classify as 'Major Departmental Project'.
+
+If budget >= 200000.00 AND dept_id IS NULL, classify as 'Major Enterprise Project'.
+
+If budget is between $100,000.00 and $199,999.99, classify as 'Standard Regional Project'.
+
+If budget < 100000.00, classify as 'Small Scale / Internal Task'.
+
+Order the output by budget descending.
+*/
+
+SELECT project_name, budget, dept_id,
+CASE
+	WHEN budget >=200000 AND dept_id IS NOT NULL THEN 'Major Departmental Project'
+	WHEN budget >=200000 AND dept_id IS NULL THEN 'Major Enterprise Project'
+	WHEN budget >=100000 AND budget <= 199999.99 THEN 'Standard Regional Project'
+	ELSE 'Small Scale / Internal Task'
+END as project_classification
+FROM projects
+ORDER BY budget desc
+
+
+/*
+Display all employees alongside a custom column indicating their leadership status.
+
+Display full_name, job_title, dept_id, and a calculated column named leadership_role.
+
+Rules:
+
+If manager_id IS NULL, label as 'Executive / C-Suite'.
+
+If the employee's emp_id exists in the manager_id column of the employees table (i.e., they manage at least one employee), label as 'People Manager'.
+
+Otherwise, label as 'Individual Contributor'.
+*/
+SELECT e.full_name,e.job_title,e.dept_id,
+CASE
+	WHEN e.manager_id is NULL THEN 'Executive / C-Suite'
+	WHEN EXISTS(SELECT 1 FROM employees as m WHERE m.manager_id = e.emp_id) THEN 'People Manager'
+	ELSE 'Individual Contributor'
+END as leadership_role
+from employees as e
+ORDER BY e.emp_id
+
+/*
+Suppose the company is planning a department-wide bonus structure based on department budgets and headcount:
+
+For employees in Engineering (dept_id = 10), calculate a 10% bonus (salary * 0.10).
+
+For employees in Product (dept_id = 20), calculate a 7% bonus (salary * 0.07).
+
+For employees in Marketing (dept_id = 30), calculate a 5% bonus (salary * 0.05).
+
+For all other departments, calculate a flat $2,500.00 bonus.
+
+Display full_name, dept_id, salary, bonus_amount, and total_projected_pay (salary + bonus_amount).
+
+OR
+
+SELECT 
+    full_name, 
+    dept_id, 
+    salary,
+    CASE dept_id
+        WHEN 10 THEN ROUND(salary * 0.10, 2)
+        WHEN 20 THEN ROUND(salary * 0.07, 2)
+        WHEN 30 THEN ROUND(salary * 0.05, 2)
+        ELSE 2500.00
+    END AS bonus,
+    (salary + 
+        CASE dept_id
+            WHEN 10 THEN ROUND(salary * 0.10, 2)
+            WHEN 20 THEN ROUND(salary * 0.07, 2)
+            WHEN 30 THEN ROUND(salary * 0.05, 2)
+            ELSE 2500.00
+        END
+    ) AS total_projected_pay
+FROM employees;
+
+*/
+
+SELECT full_name, dept_id, salary, bonus, (salary + bonus) AS total_projected_pay
+FROM (SELECT full_name, dept_id, salary,
+CASE dept_id
+	WHEN 10 THEN ROUND((salary * 0.10),2)
+	WHEN 20 THEN ROUND((salary * 0.07),2)
+	WHEN 30 THEN ROUND((salary * 0.05),2)
+	ELSE 2500
+END AS bonus
+FROM employees
+)
+
+/*
+Write a query to retrieve all projects, but enforce a specific non-alphabetical display priority:
+
+Projects with budget $> \$200,000.00$ should appear first.
+
+Projects with budget between $\$100,000.00$ and $\$200,000.00$ should appear second.
+
+Projects with budget $< \$100,000.00$ should appear third.
+
+Within each budget tier, sort the projects alphabetically by project_name.
+
+SELECT 
+    project_name, 
+    budget, 
+    dept_id
+FROM projects
+ORDER BY 
+    CASE 
+        WHEN budget > 200000.00 THEN 'Teir 1'
+        WHEN budget BETWEEN 100000.00 AND 200000.00 THEN 'Teir 2'
+        ELSE 'Teir 3'
+    END ASC,
+    project_name ASC;
+*/
+
+select project_name, dept_id, budget, priority_group
+FROM (select project_name, dept_id, budget, 
+case
+	when budget > 200000 then 'Teir 1'
+	when budget >= 100000 and budget <=200000 then 'Teir 2'
+	else 'Teir 3'
+end as priority_group
+from projects
+ORDER BY priority_group ASC
+)
+ORDER BY project_name ASC
+
+
