@@ -1,0 +1,152 @@
+/*
+Question 1: Numbering All Employees (ROW_NUMBER)Write a query to assign a simple sequential row number ($1, 2, 3, \dots$) 
+to every employee in the employees table when ordered from highest salary to lowest salary.
+Display full_name, salary, and a calculated column named overall_salary_rank.
+Hint: You don't need PARTITION BY here—just ROW_NUMBER() OVER(ORDER BY ...).
+*/
+
+
+
+SELECT full_name, salary,
+	ROW_NUMBER() OVER(
+		ORDER BY salary DESC
+	) as overall_salary_rank
+FROM employees	
+
+
+/*
+Question 2: Department Salary Averages (AVG() OVER)
+Write a query that displays every employee's name, salary, and department ID alongside the average salary of their department.
+
+Display full_name, dept_id, salary, and a calculated column named dept_avg_salary.
+
+Hint: Use AVG(salary) OVER(PARTITION BY ...). Round the average to 2 decimal places.
+*/
+
+SELECT full_name, dept_id, salary,
+	AVG(salary) OVER (
+		PARTITION BY dept_id
+	) AS dept_avg_salary
+FROM employees
+
+/*
+Question 3: Rank Employees Within Each Department (RANK)
+Write a query to rank employees by salary within their own department (highest earner in each department gets rank 1).
+
+Display full_name, dept_id, salary, and a calculated column named dept_salary_rank.
+
+Hint: Use RANK() OVER(PARTITION BY ... ORDER BY ...).
+*/
+
+
+SELECT full_name, dept_id, salary,
+	RANK() OVER (
+		PARTITION BY dept_id
+		ORDER BY salary DESC
+	) AS dept_salary_rank
+FROM employees
+
+/*
+Question 4: Cumulative Budget Running Total (SUM() OVER)
+Write a query that calculates a running total of project budgets ordered by start_date from earliest to latest.
+
+Display project_name, start_date, budget, and a calculated column named running_total_budget.
+
+Hint: Use SUM(budget) OVER(ORDER BY ...).
+*/
+
+SELECT project_name, start_date, budget, 
+	SUM(budget) OVER(
+		ORDER BY start_date ASC
+	) AS running_total_budget
+FROM projects
+
+/*
+Question 5: Compare Salary to Company-Wide Average (AVG() OVER())
+Write a query to compare each employee's salary directly against the overall company-wide average salary on every row.
+
+Display full_name, salary, and a calculated column named company_avg_salary.
+
+Hint: Leaving OVER() completely empty calculates the aggregate across the entire table.
+*/
+
+SELECT full_name, salary,
+	AVG(salary) OVER() as company_avg_salary
+FROM employees	
+
+/*
+Suppose two employees in the same department earn the exact same salary. Write a query that compares RANK() and DENSE_RANK() side-by-side.
+
+Display full_name, dept_id, salary.
+
+Include rank_val using RANK().
+
+Include dense_rank_val using DENSE_RANK().
+
+Both should partition by dept_id and order by salary DESC.
+*/
+
+select full_name, dept_id, salary,
+RANK() OVER(PARTITION BY dept_id order by salary desc) as rank_value,
+DENSE_RANK() OVER(PARTITION BY dept_id order by salary desc) as rank_value
+from employees
+
+/*
+Question 2: Salary Difference from Next Lower Earner (LAG / LEAD)
+Within each department, order employees by salary from highest to lowest. Write a query that uses LEAD() to display the salary of the next person down the line in that same department.
+
+Display full_name, dept_id, salary.
+
+Display next_lower_salary using LEAD(salary, 1) OVER(...).
+
+Display salary_difference: The difference between the current employee's salary and next_lower_salary (salary - LEAD(...)).
+*/
+SELECT full_name, dept_id, salary,
+LEAD(salary) OVER (
+	PARTITION BY dept_id
+	ORDER BY salary DESC
+) AS next_lower_salary,
+salary - LEAD(salary) OVER (
+	PARTITION BY dept_id
+	ORDER BY salary DESC
+) as salary_difference
+from employees
+
+
+/*
+Question 3: Salary Quartiles per Department (NTILE)
+Divide the employees within each department into 2 equal-sized salary tiers (Tier 1 = Top 50% earners, Tier 2 = Lower 50% earners).
+
+Display full_name, dept_id, salary, and a calculated column named salary_quartile.
+
+Hint: Use NTILE(2) OVER(PARTITION BY dept_id ORDER BY salary DESC).
+*/
+SELECT 
+    full_name,
+    dept_id,
+    salary,
+    NTILE(2) OVER (
+        PARTITION BY dept_id 
+        ORDER BY salary DESC
+    ) AS salary_quartile
+FROM employees;
+
+/*
+Question 5: Project Start Date Interval (LAG)
+Analyze the gaps between project start dates in chronological order using LAG().
+
+Display project_name, start_date, and previous_project_start_date (the start date of the project launched immediately before the current one).
+
+Order chronologically by start_date ASC.
+
+Hint: Use LAG(start_date, 1) OVER(ORDER BY start_date ASC).
+*/
+SELECT 
+    project_name,
+    start_date,
+    LAG(start_date, 1) OVER (
+        ORDER BY start_date ASC
+    ) AS previous_project_start_date
+FROM projects;
+
+select * from projects
