@@ -1,0 +1,56 @@
+
+-- Write a query to display all driver names along with their phone numbers
+--formatted with a country code prefix (e.g., +91-9876543210).
+select name, concat('+91-', phone) as phobe_number_formatted
+from drivers
+
+-- Extract the state code (first 2 characters of the registration number) and the 
+-- state-registered series (the next 2 digits) for all vehicles. 
+--(e.g., for HR26AB1234, state code is 'HR' and series is '26').
+select 
+LEFT(registration_number, 2) as state_code,
+SUBSTRING(registration_number, 3,2) as state_registered
+from vehicles
+
+-- Search for all drivers whose names contain the word "kumar" regardless of letter casing, 
+-- and display their names formatted entirely in UPPERCASE.
+SELECT UPPER(name) AS driver_name
+FROM drivers
+WHERE LOWER(name) LIKE '%kumar%';
+
+-- For all trips, display the destination and the length (character count) of their notes field.
+-- If the notes field is NULL, treat its length as 0.
+select destination,
+COALESCE(LENGTH(notes),0)
+from trips
+
+-- Generate a report listing trip_id, destination, and notes. If notes is NULL, display 'No Notes Provided' instead.
+select id, destination,
+COALESCE(notes,'No Notes Provided')
+from trips
+
+-- List all vehicles (registration number, make, and model) that have never been assigned to any trip in the system.
+select
+v.registration_number, v.make, v.model
+from vehicles as v 
+left join trips as t
+on v.id = t.vehicle_id
+where t.vehicle_id is NULL
+
+/*
+Suppose clients might missing contact info. 
+Write a query returning client names and their primary contact info using the first available value 
+among phone, email, or a default fallback string 'No Contact Info'.
+*/
+select name, COALESCE(phone, email, 'No Contact Info')
+from clients
+
+/*
+List all trips (trip ID, destination, fare) that have no expenses logged at all in the trip_expenses table.
+*/
+select
+v.id, v.destination, v.fare
+from trips as v 
+left join trip_expenses as t
+on v.id = t.trip_id
+where t.trip_id is NULL
